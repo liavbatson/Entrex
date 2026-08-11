@@ -1,0 +1,6 @@
+data/
+.idea/
+liav_dev.py
+__pycache__/
+*.pyc
+tmp/
