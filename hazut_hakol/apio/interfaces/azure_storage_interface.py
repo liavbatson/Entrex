@@ -50,13 +50,16 @@ class AzureStorageInterface:
         return downloaded
 
     def upload_file(self, local_file_path: str, blob_name: str, overwrite: bool = True):
-        blob_client = self._blob_service_client.get_blob_client(
-            container=self._container_name,
-            blob=blob_name,
-        )
-        with open(local_file_path, "rb") as data:
-            blob_client.upload_blob(data, overwrite=overwrite)
-        logger.info(f"Uploaded '{local_file_path}' to '{blob_name}'.")
+        if not self.file_exists(blob_name=blob_name):
+            blob_client = self._blob_service_client.get_blob_client(
+                container=self._container_name,
+                blob=blob_name,
+            )
+            with open(local_file_path, "rb") as data:
+                blob_client.upload_blob(data, overwrite=overwrite)
+            logger.info(f"Uploaded '{local_file_path}' to '{blob_name}'.")
+        else:
+            logger.warning(f"File already exists in azure storage: {blob_name}")
 
     def upload_dir(self, local_dir_path: str, blobs_folder: str, overwrite: bool = True):
         local_dir_path = Path(local_dir_path)
