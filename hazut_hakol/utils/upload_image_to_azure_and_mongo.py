@@ -10,7 +10,7 @@ from hazut_hakol.apio.knowledge_center.knowledge_center import KnowledgeCenter
 from hazut_hakol.core.classes.barak import Sweep
 from hazut_hakol.core.utils import Environment
 
-AZURE_INFO = DataStorageAzureNode.AZURE_STORAGE_ENTREX_CONTAINER.value
+AZURE_INFO = DataStorageAzureNode.AZURE_STORAGE_IMAGES_CONTAINER.value
 CONNECTION_STRING = AZURE_INFO.connection_string
 CONTAINER_NAME = AZURE_INFO.container_name
 

@@ -18,11 +18,11 @@ class _AzureNodeInfo:
 
 
 class DataStorageAzureNode(DataStorageNodeEnum):
-    AZURE_STORAGE_LB_CONTAINER = _AzureNodeInfo(
+    AZURE_STORAGE_IMAGES_CONTAINER = _AzureNodeInfo(
         connection_string=("DefaultEndpointsProtocol=https;AccountName=argosstrprod;AccountKey"
                            "=C8MyDqzeI4jLPDNphLV5cewx9ihVIEldQN1f6zCo7KvcvnZwF8rhWdWxG5Ssl1G+O9ZFleqAY0Pu+AStUGWt9w"
                            "==;EndpointSuffix=core.windows.net"),
-        container_name="lb-container"
+        container_name="images"
     )
 
     AZURE_STORAGE_ENTREX_CONTAINER = _AzureNodeInfo(

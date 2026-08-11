@@ -20,8 +20,8 @@ class DataFetcherException(EntrexDataError):
 class DataFetcher:
     def __init__(self, mode: Environment):
         self._mode = mode
-        connection_string = DataStorageAzureNode.AZURE_STORAGE_ENTREX_CONTAINER.value.connection_string
-        container_name = DataStorageAzureNode.AZURE_STORAGE_ENTREX_CONTAINER.value.container_name
+        connection_string = DataStorageAzureNode.AZURE_STORAGE_IMAGES_CONTAINER.value.connection_string
+        container_name = DataStorageAzureNode.AZURE_STORAGE_IMAGES_CONTAINER.value.container_name
         self._azure_storage_interface = AzureStorageInterface(connection_string=connection_string,
                                                               container_name=container_name)
 
