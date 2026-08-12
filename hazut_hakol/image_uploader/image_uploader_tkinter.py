@@ -1,4 +1,3 @@
-
 import os
 import sys
 import threading
@@ -41,7 +40,7 @@ class FolderUploaderUI:
         setup_styles()
 
         # Variables to store folder path
-        self.folder_path = tk.StringVar()
+        self.root_path = tk.StringVar()
 
         # Create the UI components
         self.create_widgets()
@@ -73,21 +72,21 @@ class FolderUploaderUI:
 
         # Requirements text
         requirements_label = ttk.Label(main_frame,
-                                      text="Folder must contain exactly one metadata file (json) and one image (jpg, jpeg, png, tiff, tif, bmp)",
-                                      style='Requirements.TLabel',
-                                      wraplength=550)
+                                       text="Select a directory containing folders with image and metadata files",
+                                       style='Requirements.TLabel',
+                                       wraplength=550)
         requirements_label.grid(row=2, column=0, columnspan=3, sticky=tk.W, pady=(0, 15))
 
         # Folder selection frame
-        folder_frame = ttk.LabelFrame(main_frame, text="Folder Selection", padding="15")
+        folder_frame = ttk.LabelFrame(main_frame, text="Directory Selection", padding="15")
         folder_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))
         folder_frame.columnconfigure(1, weight=1)
 
         # Folder path
-        ttk.Label(folder_frame, text="Select Folder:").grid(row=0, column=0, sticky=tk.W, pady=5)
-        folder_entry = ttk.Entry(folder_frame, textvariable=self.folder_path, width=60)
+        ttk.Label(folder_frame, text="Select Directory:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        folder_entry = ttk.Entry(folder_frame, textvariable=self.root_path, width=60)
         folder_entry.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5, padx=(0, 10))
-        browse_btn = ttk.Button(folder_frame, text="Browse...", command=self.browse_folder, style='Custom.TButton')
+        browse_btn = ttk.Button(folder_frame, text="Browse...", command=self.browse_directory, style='Custom.TButton')
         browse_btn.grid(row=1, column=2, sticky=tk.W, pady=5)
 
         # Progress section
@@ -104,16 +103,17 @@ class FolderUploaderUI:
         self.status_label.grid(row=1, column=0, sticky=tk.W)
 
         # Run button
-        self.run_button = ttk.Button(main_frame, text="Upload Folder", command=self.run_upload, style='Custom.TButton')
+        self.run_button = ttk.Button(main_frame, text="Upload Directory", command=self.run_upload,
+                                     style='Custom.TButton')
         self.run_button.grid(row=5, column=1, pady=20, sticky=tk.E)
 
         # Make sure the main frame expands properly
         main_frame.columnconfigure(1, weight=1)
 
-    def browse_folder(self):
-        folder_selected = filedialog.askdirectory(title="Select Folder with Image and Metadata")
-        if folder_selected:
-            self.folder_path.set(folder_selected)
+    def browse_directory(self):
+        directory_selected = filedialog.askdirectory(title="Select Directory Containing Folders")
+        if directory_selected:
+            self.root_path.set(directory_selected)
 
     def get_image_suffix_from_folder(self, folder_path):
         """Extract image suffix from the folder contents"""
@@ -132,59 +132,97 @@ class FolderUploaderUI:
         raise ValueError("No image file found in folder")
 
     def run_upload(self):
-        folder = self.folder_path.get()
+        directory = self.root_path.get()
 
-        if not folder:
-            messagebox.showerror("Error", "Please select a folder")
+        if not directory:
+            messagebox.showerror("Error", "Please select a directory")
             return
 
         try:
-            # Automatically detect image suffix from folder contents
-            image_suffix = self.get_image_suffix_from_folder(folder)
-
             # Disable the button and show progress
             self.run_button.config(state='disabled')
             self.status_label.config(text="Processing...", foreground="#3498db")
             self.progress.start()
 
             # Run the upload in a separate thread to avoid freezing the UI
-            thread = threading.Thread(target=self.upload_folder, args=(folder, image_suffix))
+            thread = threading.Thread(target=self.upload_directory, args=(directory,))
             thread.daemon = True
             thread.start()
 
-        except ValueError as e:
-            messagebox.showerror("Error", str(e))
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             messagebox.showerror("Error", f"An unexpected error occurred: {str(e)}")
 
-    def upload_folder(self, folder_path, image_suffix):
+    def upload_directory(self, directory):
         try:
-            # Import your existing modules (you'll need to adjust these paths)
-            sys.path.insert(0, str(Path(folder_path).parent))
+            dir_path = Path(directory)
 
-            # Import your existing ImageUploader class
-            from hazut_hakol.apio.data_storage.data_storage_azure import DataStorageAzureNode
-            from hazut_hakol.apio.interfaces.azure_storage_interface import AzureStorageInterface
-            from hazut_hakol.apio.knowledge_center.knowledge_center import KnowledgeCenter
-            from hazut_hakol.core.classes.barak import Sweep
-            from hazut_hakol.core.utils import Environment
+            # Check if this is a folder with image and json (single folder case)
+            # or a parent directory containing multiple folders
+            subfolders = [f for f in dir_path.iterdir() if f.is_dir()]
 
-            # Import ImageUploader
-            from hazut_hakol.image_uploader.upload_image_to_azure_and_mongo import ImageUploader
+            # If there are no subdirectories, treat the current directory as containing one folder
+            if not subfolders:
+                # Check if the current directory has both image and json files
+                image_files = list(dir_path.glob("*.jpg")) + list(dir_path.glob("*.jpeg")) + \
+                              list(dir_path.glob("*.png")) + list(dir_path.glob("*.tiff")) + \
+                              list(dir_path.glob("*.tif")) + list(dir_path.glob("*.bmp"))
 
-            # Create the ImageUploader instance
-            image_uploader = ImageUploader(
-                mode=Environment.DEVELOPMENT,
-                input_folder=folder_path,
-                image_suffix=image_suffix
-            )
+                json_files = list(dir_path.glob("*.json"))
 
-            # Perform the upload
-            image_uploader.upload_image()
+                if len(image_files) == 1 and len(json_files) == 1:
+                    # This is a single folder with image and metadata - process it directly
+                    folders_to_process = [dir_path]
+                else:
+                    messagebox.showerror("Error",
+                                         "Directory must contain either:\n1. Multiple subfolders each with image and metadata\n2. A single folder with one image and one json file")
+                    self.root.after(0, lambda: self.update_status("Invalid directory structure", "red"))
+                    return
+            else:
+                # Process all subdirectories
+                folders_to_process = subfolders
+
+            # Process each folder
+            for i, folder in enumerate(folders_to_process):
+                try:
+                    # Automatically detect image suffix from folder contents
+                    image_suffix = self.get_image_suffix_from_folder(folder)
+
+                    # Import your existing modules (you'll need to adjust these paths)
+                    sys.path.insert(0, str(Path(folder).parent))
+
+                    # Import your existing ImageUploader class and related modules
+                    from hazut_hakol.apio.data_storage.data_storage_azure import DataStorageAzureNode
+                    from hazut_hakol.apio.interfaces.azure_storage_interface import AzureStorageInterface
+                    from hazut_hakol.apio.knowledge_center.knowledge_center import KnowledgeCenter
+                    from hazut_hakol.core.classes.barak import Sweep
+                    from hazut_hakol.core.utils import Environment
+
+                    # Import ImageUploader
+                    from hazut_hakol.image_uploader.upload_image_to_azure_and_mongo import ImageUploader
+
+                    # Create the ImageUploader instance
+                    image_uploader = ImageUploader(
+                        mode=Environment.DEVELOPMENT,
+                        input_folder=str(folder),
+                        image_suffix=image_suffix
+                    )
+
+                    # Perform the upload
+                    image_uploader.upload_image()
+
+                    # Update UI with progress
+                    self.root.after(0, lambda msg=f"Processed folder {i + 1}/{len(folders_to_process)}: {folder.name}":
+                    self.update_status(msg, "black"))
+
+                except Exception as e:
+                    logger.error(f"Error processing folder {folder}: {str(e)}")
+                    self.root.after(0, lambda msg=f"Error in folder {folder.name}: {str(e)}":
+                    self.update_status(msg, "red"))
+                    continue
 
             # Update UI with success message
-            self.root.after(0, lambda: self.update_status("Upload completed successfully!", "green"))
+            self.root.after(0, lambda: self.update_status("All folders processed successfully!", "green"))
 
         except Exception as e:
             logger.error(f"Error during upload: {str(e)}")
