@@ -4,6 +4,7 @@ import cv2
 from loguru import logger
 
 from hazut_hakol.apio.data_interfaces import MetadataFetcher
+from hazut_hakol.apio.data_interfaces.asset_sender import AssetSender
 from hazut_hakol.apio.data_storage.data_storage_azure import DataStorageAzure
 from hazut_hakol.core.utils import Environment
 from hazut_hakol.io.image_io import read_barak_image
@@ -32,6 +33,8 @@ class MockSecondTaskor(ETS_Interface):
         self._tensor_grayscaled_flipped_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     def save(self):
+        self._asset_sender = AssetSender(mode=self._mode, sweep=self._sweep, asset_name="mock_asset")
         self._grayscaled_flliped_img_local_path = self._tmp_storage / "gray_flipped_img.png"
         cv2.imwrite(self._grayscaled_flliped_img_local_path, self._tensor_grayscaled_flipped_img)
         self.data_storage.upload_file(self._grayscaled_flliped_img_local_path, f"{self._trigger_id}/gray_flipped_img.png")
+        self._asset_sender.send_single_asset(self._grayscaled_flliped_img_local_path)

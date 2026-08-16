@@ -49,7 +49,9 @@ class AzureStorageInterface:
         logger.info(f"\nDownloaded {downloaded} file(s) to '{local_folder}'.")
         return downloaded
 
-    def upload_file(self, local_file_path: str, blob_name: str, overwrite: bool = True):
+    def upload_file(self, local_file_path: Union[str, Path], blob_name: Union[str, Path], overwrite: bool = True):
+        local_file_path = str(local_file_path)
+        blob_name = str(blob_name)
         if not self.file_exists(blob_name=blob_name):
             blob_client = self._blob_service_client.get_blob_client(
                 container=self._container_name,
