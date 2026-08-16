@@ -204,7 +204,7 @@ class FolderUploaderUI:
                     # Create the ImageUploader instance
                     image_uploader = ImageUploader(
                         mode=Environment.DEVELOPMENT,
-                        input_folder=str(folder),
+                        input_folder=folder,
                         image_suffix=image_suffix
                     )
 

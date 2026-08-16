@@ -42,7 +42,7 @@ class ImageUploader:
     def upload_to_azure_storage(self) -> str:
         sweep = self.read_json_into_sweep_object()
         logger.info(f"Uploading sweep: {sweep.sensor}:{sweep.sweep_gid} to AzureStorage")
-        blob_name = f"images/{sweep.sensor.value}/{Path(self._image_file_path).name}"
+        blob_name = f"images/{sweep.sensor.value}/{sweep.sweep_gid}/{Path(self._image_file_path).name}"
         self._azure_storage_interface.upload_file(
             local_file_path=str(self._image_file_path),
             blob_name=blob_name,
