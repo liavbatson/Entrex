@@ -7,11 +7,11 @@ from hazut_hakol.core.classes.barak import Sweep
 
 class DataFetcherInterface(ABC):
     @abstractmethod
-    def download_sweep(self, sweep: Sweep, output_dir: Path):
+    def download_sweep(self, sweep: Sweep, output_dir: Path) -> dict:
         ...
 
     @abstractmethod
-    def download_sweeps(self, sweeps: List[Sweep], output_dir: Path, raise_on_missing: bool = False):
+    def download_sweeps(self, sweeps: List[Sweep], output_dir: Path, raise_on_missing: bool = False) -> dict:
         ...
 
     @abstractmethod

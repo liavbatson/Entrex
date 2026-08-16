@@ -26,8 +26,15 @@ class DataFetcher(DataFetcherInterface):
         self._azure_storage_interface = AzureStorageInterface(connection_string=connection_string,
                                                               container_name=container_name)
 
-    def download_sweep(self, sweep: Sweep, output_dir: Path):
-        pass
+    def download_sweep(self, sweep: Sweep, output_dir: Path) -> dict:
+        sweeps_dict = {}
+        azure_path = Path(sweep.image_path_in_azure)
+        self._azure_storage_interface.download_file(
+            blob_name=sweep.image_path_in_azure,
+            download_path=str(output_dir / azure_path.name)
+        )
+        sweeps_dict[sweep.sweep_gid] = str(output_dir / azure_path.name)
+        return sweeps_dict
 
     def download_sweeps(self, sweeps: List[Sweep], output_dir: Path, raise_on_missing: bool = False) -> dict:
         sweeps_dict = {}
