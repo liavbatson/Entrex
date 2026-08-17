@@ -89,7 +89,7 @@ class ImagesMetadataDBInterface:
         }
 
         if polygon is not None:
-            query["geometry"] = {
+            query["trace"] = {
                 "$geoWithin": {
                     "$geometry": polygon.__geo_interface__
                 }
@@ -99,7 +99,7 @@ class ImagesMetadataDBInterface:
         if sweep_gids_ignore_list:
             query["sweep_gid"] = {"$nin": sweep_gids_ignore_list}
         if sorties_ignore_list:
-            query["sortie"] = {"$nin": sorties_ignore_list}
+            query["sortie_id"] = {"$nin": sorties_ignore_list}
 
         sweeps = self.get_sweeps_metadata_by_custom_query(
             query=query,
