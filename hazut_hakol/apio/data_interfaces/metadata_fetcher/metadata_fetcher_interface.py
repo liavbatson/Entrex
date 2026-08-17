@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from math import inf
 from typing import List, Union
 
-from ijson.backends.python import inf
 from shapely import Polygon, MultiPolygon
 
 from hazut_hakol.core.classes.barak import Sweep

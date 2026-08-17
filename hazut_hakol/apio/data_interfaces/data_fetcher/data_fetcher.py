@@ -53,7 +53,14 @@ class DataFetcher(DataFetcherInterface):
                                          asset_filename: str,
                                          raise_on_missing: bool = False
     ):
-        pass
+        sweeps_dict = {}
+        file_to_download = Path(sweep.image_path_in_azure).stem / asset_filename
+        self._azure_storage_interface.download_file(
+            blob_name=file_to_download,
+            download_path=str(output_dir / file_to_download.name)
+        )
+        sweeps_dict[sweep.sweep_gid] = str(output_dir / file_to_download.name)
+        return sweeps_dict
 
     def download_sweeps_asset_by_filename(self,
                                           sweeps: List[Sweep],
@@ -61,7 +68,15 @@ class DataFetcher(DataFetcherInterface):
                                           asset_filename: str,
                                           raise_on_missing: bool = False
     ):
-        pass
+        sweeps_dict = {}
+        for sweep in sweeps:
+            file_to_download = Path(sweep.image_path_in_azure).stem / asset_filename
+            self._azure_storage_interface.download_file(
+                blob_name=file_to_download,
+                download_path=str(output_dir / file_to_download.name)
+            )
+            sweeps_dict[sweep.sweep_gid] = str(output_dir / file_to_download.name)
+        return sweeps_dict
 
     def download_grids(self, sweeps: List[Sweep], output_dir: Path, raise_on_missing: bool = False):
         pass
