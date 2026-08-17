@@ -1,7 +1,7 @@
 from datetime import datetime
+from math import inf
 from typing import List, Union
 
-from ijson.backends.python import inf
 from shapely import Polygon, MultiPolygon
 
 from hazut_hakol.apio.data_interfaces.metadata_fetcher.metadata_fetcher_interface import MetadataFetcherInterface
@@ -35,49 +35,35 @@ class MetadataFetcher(MetadataFetcherInterface):
                                                             sorties_ignore_list: List[str] = [],
                                                             limit_amount_sweeps: int = inf
                                                             ) -> List[Sweep]:
-        sensors = [sensor.value for sensor in sensors]
-        # Base query
-        query = {
-            "capture_time": {
-                "$gte": start_date,
-                "$lte": end_date
-            },
-            "sensor": {"$in": sensors}
-        }
-        # Add polygon to query
-        if polygon is not None:
-            query["geometry"] = {
-                "$geoWithin": {
-                    "$geometry": polygon.__geo_interface__
-                }
-            }
-        # Add imaging technique
-        if imaging_technique is not None:
-            query["imaging_technique"] = {"$in": imaging_technique.value}
-        # Add sweep to ignore
-        if sweep_gids_ignore_list:
-            query["sweep_gid"] = {"$nin": sweep_gids_ignore_list}
-        # Add sorties to ignore
-        if sorties_ignore_list:
-            query["sortie"] = {"$nin": sorties_ignore_list}
-
-        cursor = self._images_metadata_collection.find(query)
-        if limit_amount_sweeps != float('inf'):
-            cursor = cursor.limit(int(limit_amount_sweeps))
-
-        sweeps = []
-        for document in cursor:
-            sweep = Sweep.from_mongo_document(document)
-            sweeps.append(sweep)
-
-        return sweeps
+        return self._images_metadata_db_interface.fetch_sweeps_in_capture_time_range_and_multipolygon(
+            polygon=polygon,
+            start_date=start_date,
+            end_date=end_date,
+            sensors=sensors,
+            imaging_technique=imaging_technique,
+            sweep_gids_ignore_list=sweep_gids_ignore_list,
+            sorties_ignore_list=sorties_ignore_list,
+            limit_amount_sweeps=limit_amount_sweeps
+        )
     
     def fetch_sortie(self, sortie: str, sweep_gids_ignore_list: List[str] = [],
                      limit_amount_sweeps: int = inf) -> List[Sweep]:
-        pass
+        return self._images_metadata_db_interface.fetch_sortie(
+            sortie=sortie,
+            sweep_gids_ignore_list=sweep_gids_ignore_list,
+            limit_amount_sweeps=limit_amount_sweeps
+        )
     
-    def fetch_sweeps_starts_with(self, sweep_gid_prefix: str) -> List[Sweep]:
-        pass
+    def fetch_sweeps_starts_with(self, sweep_gid_prefix: str,
+                                 limit_amount_sweeps: int = inf) -> List[Sweep]:
+        return self._images_metadata_db_interface.fetch_sweeps_starts_with(
+            sweep_gid_prefix=sweep_gid_prefix,
+            limit_amount_sweeps=limit_amount_sweeps
+        )
     
-    def fetch_sweeps_ends_with(self, sweep_gid_suffix: str) -> List[Sweep]:
-        pass
+    def fetch_sweeps_ends_with(self, sweep_gid_suffix: str,
+                               limit_amount_sweeps: int = inf) -> List[Sweep]:
+        return self._images_metadata_db_interface.fetch_sweeps_ends_with(
+            sweep_gid_suffix=sweep_gid_suffix,
+            limit_amount_sweeps=limit_amount_sweeps
+        )
