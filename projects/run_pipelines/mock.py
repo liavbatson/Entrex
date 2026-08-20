@@ -11,10 +11,9 @@ if __name__ == "__main__":
     tmp_storage = Path("./tmp")
 
     trigger_ids = [
-        "cat_gid",
-        "dog_gid",
-        "horse_gid",
-        "rabbit_gid",
+        "S2B_MSIL2A_20260807T081609_N0512_R121_T36RYT_20260807T122023",
+        "S2A_MSIL2A_20260811T081021_N0512_R078_T36RYT_20260811T132655",
+        "S2C_MSIL2A_20260809T080611_N0512_R078_T36RYT_20260809T115100"
     ]
 
     for trigger_id in trigger_ids:

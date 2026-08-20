@@ -1,4 +1,5 @@
 data/
+data_sentinel/
 .idea/
 liav_dev.py
 __pycache__/

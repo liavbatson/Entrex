@@ -92,7 +92,7 @@ def _convert_crs_geometry(geometry, transformer):
         coords_list = list(geometry.exterior.coords)
         coords_array = np.array(coords_list)
 
-        transformed_coords = _convert_crs_geometry(coords_array, transformer)
+        transformed_coords = _convert_crs_points(coords_array, transformer)
         return Polygon(transformed_coords)
     else:
         raise ValueError("Unsupported geometry type. Expected Polygon or MultiPolygon")
