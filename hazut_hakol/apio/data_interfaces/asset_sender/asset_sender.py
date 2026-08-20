@@ -23,5 +23,5 @@ class AssetSender(AssetSenderInterface):
     def send_single_asset(self, product_path: Path):
         self._azure_storage_interface.upload_file(
             local_file_path=product_path,
-            blob_name=Path(f"images/{self._sweep.sensor.value}/{self._sweep.sweep_gid}/{self._sweep.sweep_gid}_{self._asset_name}").with_suffix(product_path.suffix)
+            blob_name=Path(self._sweep.image_path_in_azure).with_name(product_path.name)
         )
